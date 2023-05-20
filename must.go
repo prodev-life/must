@@ -3,7 +3,131 @@ package must
 import (
 	"errors"
 	"fmt"
+	"runtime"
 )
+
+/*
+Usage: see must_test.go
+*/
+
+func Do[T any](result T, err error) *oneHolder[T] {
+	return &oneHolder[T]{result, err}
+}
+func Do2[T1, T2 any](r1 T1, r2 T2, err error) *twoHolder[T1, T2] {
+	return &twoHolder[T1, T2]{r1, r2, err}
+}
+func Do3[T1, T2, T3 any](r1 T1, r2 T2, r3 T3, err error) *threeHolder[T1, T2, T3] {
+	return &threeHolder[T1, T2, T3]{r1, r2, r3, err}
+}
+func Do4[T1, T2, T3, T4 any](r1 T1, r2 T2, r3 T3, r4 T4, err error) *fourHolder[T1, T2, T3, T4] {
+	return &fourHolder[T1, T2, T3, T4]{r1, r2, r3, r4, err}
+}
+
+func newErr(err error, ctxFormat string, ctxArgs... any) *Err {
+	_, file, line, _ := runtime.Caller(2)
+	return &Err{
+		Err: err,
+		Ctx: fmt.Sprintf(ctxFormat, ctxArgs...),
+		File: file,
+		Line: line,
+	}
+}
+
+func (h *oneHolder[T]) R() T {
+	if h.err != nil {
+		panic(newErr(h.err, ""))
+	}
+	return h.result
+}
+
+func (h *oneHolder[T]) Rf(ctxFormat string, ctxArgs... any) T {
+	if h.err != nil {
+		panic(newErr(h.err, ctxFormat, ctxArgs...))
+	}
+	return h.result
+}
+
+func (h *twoHolder[T1, T2]) R() (T1, T2) {
+	if h.err != nil {
+		panic(newErr(h.err, ""))
+	}
+	return h.r1, h.r2
+}
+
+func (h *twoHolder[T1, T2]) Rf(ctxFormat string, ctxArgs... any) (T1, T2) {
+	if h.err != nil {
+		panic(newErr(h.err, ctxFormat, ctxArgs...))
+	}
+	return h.r1, h.r2
+}
+
+
+func (h *threeHolder[T1, T2, T3]) R() (T1, T2, T3) {
+	if h.err != nil {
+		panic(newErr(h.err, ""))
+	}
+	return h.r1, h.r2, h.r3
+}
+
+func (h *threeHolder[T1, T2, T3]) Rf(ctxFormat string, ctxArgs... any) (T1, T2, T3) {
+	if h.err != nil {
+		panic(newErr(h.err, ctxFormat, ctxArgs...))
+	}
+	return h.r1, h.r2, h.r3
+}
+
+func (h *fourHolder[T1, T2, T3, T4]) R() (T1, T2, T3, T4) {
+	if h.err != nil {
+		panic(newErr(h.err, ""))
+	}
+	return h.r1, h.r2, h.r3, h.r4
+}
+
+func (h *fourHolder[T1, T2, T3, T4]) Rf(ctxFormat string, ctxArgs... any) (T1, T2, T3, T4) {
+	if h.err != nil {
+		panic(newErr(h.err, ctxFormat, ctxArgs...))
+	}
+	return h.r1, h.r2, h.r3, h.r4
+}
+
+
+var ErrHold = errors.New("condition did not hold true")
+
+type Err struct {
+	Err  error
+	Ctx string
+	File string
+	Line int
+}
+
+func (err *Err) Error() string {
+	return fmt.Sprintf("must(%s) |%s:%d| failed with: %v", err.Ctx, err.File, err.Line, err.Err)
+}
+
+func Hold(cond bool) {
+	if !cond {
+		panic(newErr(ErrHold, ""))
+	}
+}
+
+func Holdf(cond bool, ctxFormat string, ctxArgs ...any) {
+	if !cond {
+		panic(newErr(ErrHold, ctxFormat, ctxArgs...))
+	}
+}
+
+func Must(err error) {
+	if err != nil {
+		panic(newErr(err, ""))
+	}
+}
+
+func Mustf(err error, ctxFormat string, ctxArgs ...any) {
+	if err != nil {
+		panic(newErr(err, ctxFormat, ctxArgs...))
+	}
+}
+
 
 type oneHolder[T any] struct {
 	result T
@@ -29,102 +153,4 @@ type fourHolder[T1, T2, T3, T4 any] struct {
 	r3  T3
 	r4  T4
 	err error
-}
-
-func P[T any](result T, err error) *oneHolder[T] {
-	return &oneHolder[T]{result, err}
-}
-func P2[T1, T2 any](r1 T1, r2 T2, err error) *twoHolder[T1, T2] {
-	return &twoHolder[T1, T2]{r1, r2, err}
-}
-func P3[T1, T2, T3 any](r1 T1, r2 T2, r3 T3, err error) *threeHolder[T1, T2, T3] {
-	return &threeHolder[T1, T2, T3]{r1, r2, r3, err}
-}
-func P4[T1, T2, T3, T4 any](r1 T1, r2 T2, r3 T3, r4 T4, err error) *fourHolder[T1, T2, T3, T4] {
-	return &fourHolder[T1, T2, T3, T4]{r1, r2, r3, r4, err}
-}
-
-var ErrHold = errors.New("condition did not hold true")
-
-type ErrMust struct {
-	Err  error
-	Name string
-}
-
-func (err *ErrMust) Error() string {
-	return fmt.Sprintf("must.*(%s) failed with: %v", err.Name, err.Err)
-}
-
-func Do[T any](holder *oneHolder[T], format string, args ...any) T {
-	if holder.err != nil {
-		panic(&ErrMust{Err: holder.err, Name: fmt.Sprintf(format, args...)})
-	}
-	return holder.result
-}
-
-func Do2[T1, T2 any](holder *twoHolder[T1, T2], format string, args ...any) (T1, T2) {
-	if holder.err != nil {
-		panic(&ErrMust{Err: holder.err, Name: fmt.Sprintf(format, args...)})
-	}
-	return holder.r1, holder.r2
-}
-
-func Do3[T1, T2, T3 any](holder *threeHolder[T1, T2, T3], format string, args ...any) (T1, T2, T3) {
-	if holder.err != nil {
-		panic(&ErrMust{Err: holder.err, Name: fmt.Sprintf(format, args...)})
-	}
-	return holder.r1, holder.r2, holder.r3
-}
-
-func Do4[T1, T2, T3, T4 any](holder *fourHolder[T1, T2, T3, T4], format string, args ...any) (T1, T2, T3, T4) {
-	if holder.err != nil {
-		panic(&ErrMust{Err: holder.err, Name: fmt.Sprintf(format, args...)})
-	}
-	return holder.r1, holder.r2, holder.r3, holder.r4
-}
-
-func Hold(cond bool, format string, args ...any) {
-	if !cond {
-		panic(&ErrMust{Err: ErrHold, Name: fmt.Sprintf(format, args...)})
-	}
-}
-
-func Must(err error, format string, args ...any) {
-	if err != nil {
-		panic(&ErrMust{Err: err, Name: fmt.Sprintf(format, args...)})
-	}
-}
-
-func Work(int) (int, error) { return 0, nil }
-
-func Test() (int, error) {
-	v1, err := Work(0)
-	if err != nil {
-		return 0, err
-	}
-	v2, err := Work(v1)
-	if err != nil {
-		return 0, err
-	}
-	v3, err := Work(v2)
-	if err != nil {
-		return 0, err
-	}
-	return v3, nil
-}
-
-func Test2() (v3 int, err error) {
-	defer func() {
-		maybeErr := recover()
-		if errMust, ok := maybeErr.(*ErrMust); ok {
-			v3 = 0
-			err = errMust.Err
-			return
-		}
-		panic(maybeErr)
-	}()
-	v1 := Do(P(Work(0)), "Work(0)")
-	v2 := Do(P(Work(v1)), "Work(v1)")
-	v3 = Do(P(Work(v2)), "Work(v2)")
-	return
 }
