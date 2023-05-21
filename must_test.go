@@ -14,31 +14,32 @@ func getThisFile() string {
 	_, file, _, _ := runtime.Caller(0)
 	return file
 }
+
 var thisFile = getThisFile()
 
 func incOdd(arg int) (result int, err error) {
-	if arg % 2 != 0 {
+	if arg%2 != 0 {
 		return arg + 1, nil
 	}
 	return 0, errorNotAndOddInt
 }
 
 func incOdd2(arg int) (r1 int, r2 int, err error) {
-	if arg % 2 != 0 {
+	if arg%2 != 0 {
 		return arg + 1, arg + 2, nil
 	}
 	return 0, 0, errorNotAndOddInt
 }
 
 func incOdd3(arg int) (r1 int, r2 int, r3 int, err error) {
-	if arg % 2 != 0 {
+	if arg%2 != 0 {
 		return arg + 1, arg + 2, arg + 3, nil
 	}
 	return 0, 0, 0, errorNotAndOddInt
 }
 
 func incOdd4(arg int) (r1 int, r2 int, r3 int, r4 int, err error) {
-	if arg % 2 != 0 {
+	if arg%2 != 0 {
 		return arg + 1, arg + 2, arg + 3, arg + 4, nil
 	}
 	return 0, 0, 0, 0, errorNotAndOddInt
