@@ -26,13 +26,13 @@ val, hasVal := someMap[key]
 must.Hold(hasVal)
 
 func CouldBeLotsOfEarlyReturns() (retval int, reterr err) {
-    defer func() {
-        if mustErr, ok := must.AsErrOrPanic(recover()); ok {
+	defer func() {
+		if mustErr, ok := must.AsErrOrPanic(recover()); ok {
 			retval = 0
 			reterr = mustErr.Err
 			log("CouldBeLotsOfEarlyReturns failed: %v", mustErr)
 		}
-    }()
+	}()
 	r1 := must.Do(mightFail1()).R()
 	r2 := must.Do(mightFail2(r1)).Rf("mightFail2(%d)", r1)
 	r3 := must.Do(mightFail3(r2)).R()
