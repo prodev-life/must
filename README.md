@@ -27,8 +27,7 @@ must.Hold(hasVal)
 
 func CouldBeLotsOfEarlyReturns() (retval int, reterr err) {
     defer func() {
-		maybeErr := recover()
-		if mustErr, ok := maybeErr.(*must.Err); ok {
+        if mustErr, ok := must.AsErrOrPanic(recover()); ok {
 			retval = 0
 			reterr = mustErr.Err
 			log("CouldBeLotsOfEarlyReturns failed: %v", mustErr)

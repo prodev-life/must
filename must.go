@@ -21,11 +21,11 @@ Example
 
 	func LotsOfEarlyReturns() (retval int, reterr err) {
 	    defer func() {
-			maybeErr := recover()
-			if mustErr, ok := maybeErr.(*must.Err); ok {
+			if mustErr, ok := must.AsErrOrPanic(recover()); ok {
 				retval = 0
 				reterr = mustErr.Err
 				log("LotsOfEarlyReturns failed: %v", mustErr)
+				return
 			}
 	    }()
 		r1 := must.Do(mightFail1()).R()
@@ -204,6 +204,20 @@ func Mustf(err error, ctxFormat string, ctxArgs ...any) {
 	if err != nil {
 		panic(newErr(err, ctxFormat, ctxArgs...))
 	}
+}
+
+// AsErrOrPanic is intended for use in defer closures with recover()
+//
+// Any recovered object that is not a *must.Err will be repaniced.
+// nil object will be ignored with (nil, false) return values.
+func AsErrOrPanic(maybeErr any) (*Err, bool) {
+	if maybeErr == nil {
+		return nil, false
+	}
+	if mustErr, ok := maybeErr.(*Err); ok {
+		return mustErr, true
+	}
+	panic(maybeErr)
 }
 
 func newErr(err error, ctxFormat string, ctxArgs ...any) *Err {

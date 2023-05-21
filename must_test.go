@@ -85,7 +85,6 @@ func runMust(t *testing.T) (reterr *Err) {
 			return
 		}
 	}()
-
 	_, err := incOdd(0)
 	Must(err)
 	return
@@ -121,13 +120,11 @@ func runHold(t *testing.T) (reterr *Err) {
 
 func runHoldf(t *testing.T) (reterr *Err) {
 	defer func() {
-		maybeErr := recover()
-		if errMust, ok := maybeErr.(*Err); ok {
+		if errMust, ok := AsErrOrPanic(recover()); ok {
 			reterr = errMust
 			return
 		}
 	}()
-
 	_, err := incOdd(0)
 	Holdf(err == nil, "incOdd(%d)", 0)
 	return
