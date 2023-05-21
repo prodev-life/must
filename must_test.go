@@ -3,10 +3,9 @@ package must
 import (
 	"errors"
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"runtime"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 var errorNotAndOddInt = errors.New("not and odd int")
