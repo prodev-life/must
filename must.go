@@ -11,7 +11,7 @@ Currently can wrap up to four returned values (not counting last error). Uses ge
 Example
 
 	file1 := must.Do(os.Open("file1")).R()
-	file2 := must.Do(os.Open("file2")).Rf("Open(%s)", file2)
+	file2 := must.Do(os.Open("file2")).Rf("Open(%s)", "file2")
 
 	cmd := exec.Command(...)
 	must.Mustf(cmd.Start(), "cmd start")

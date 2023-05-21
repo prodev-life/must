@@ -14,10 +14,10 @@ if err != nil {
 
 Currently it can wrap up to four returned values (not counting one last error). Uses generics.
 
-Example
+### Example
 ```go
 file1 := must.Do(os.Open("file1")).R()
-file2 := must.Do(os.Open("file2")).Rf("Open(%s)", file2)
+file2 := must.Do(os.Open("file2")).Rf("Open(%s)", "file2")
 
 cmd := exec.Command(...)
 must.Mustf(cmd.Start(), "cmd start")
