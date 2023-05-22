@@ -42,4 +42,4 @@ func CouldBeLotsOfEarlyReturns() (retval int, reterr err) {
 
 Documentation
 -------------
-TBD with a link to pkg.go.dev
+https://pkg.go.dev/github.com/prodev-life/must#pkg-index
