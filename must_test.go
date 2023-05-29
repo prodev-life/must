@@ -130,6 +130,66 @@ func runHoldf(t *testing.T) (reterr *Err) {
 	return
 }
 
+func runGet(t *testing.T) (reterr *Err) {
+	defer func() {
+		if errMust, ok := AsErrOrPanic(recover()); ok {
+			reterr = errMust
+			return
+		}
+	}()
+	m := map[string]int{"1": 1}
+	v := Get(m, "1")
+	assert.Equal(t, 1, v)
+	_ = Get(m, "key")
+	return
+}
+
+func runGetf(t *testing.T) (reterr *Err) {
+	defer func() {
+		if errMust, ok := AsErrOrPanic(recover()); ok {
+			reterr = errMust
+			return
+		}
+	}()
+	m := map[string]int{"1": 1}
+	v := Getf(m, "1", "m[\"1\"]")
+	assert.Equal(t, 1, v)
+	_ = Getf(m, "2", "m[\"2\"]")
+	return
+}
+
+func runCast(t *testing.T) (reterr *Err) {
+	defer func() {
+		if errMust, ok := AsErrOrPanic(recover()); ok {
+			reterr = errMust
+			return
+		}
+	}()
+	s := "hello"
+	var iface any
+	iface = s
+	sCasted := Cast[string](iface)
+	assert.Equal(t, "hello", sCasted)
+	_ = Cast[int](iface)
+	return
+}
+
+func runCastf(t *testing.T) (reterr *Err) {
+	defer func() {
+		if errMust, ok := AsErrOrPanic(recover()); ok {
+			reterr = errMust
+			return
+		}
+	}()
+	s := "hello"
+	var iface any
+	iface = s
+	sCasted := Cast[string](iface)
+	assert.Equal(t, "hello", sCasted)
+	_ = Castf[int](iface, "iface.(int)")
+	return
+}
+
 func TestMust(t *testing.T) {
 	err := runIncR(t)
 	assert.NotNil(t, err)
@@ -178,4 +238,36 @@ func TestMust(t *testing.T) {
 	assert.Equal(t, "incOdd(0)", err.Ctx)
 	assert.Equal(t, ErrHold, err.Err)
 	assert.Equal(t, fmt.Sprintf("must(incOdd(0)) |%s:%d| failed with: condition did not hold true", err.File, err.Line), err.Error())
+
+	err = runGet(t)
+	assert.NotNil(t, err)
+	assert.Equal(t, thisFile, err.File)
+	assert.Equal(t, 143, err.Line)
+	assert.Equal(t, "", err.Ctx)
+	assert.Equal(t, ErrGet, err.Err)
+	assert.Equal(t, fmt.Sprintf("must() |%s:%d| failed with: value is not in a map", err.File, err.Line), err.Error())
+
+	err = runGetf(t)
+	assert.NotNil(t, err)
+	assert.Equal(t, thisFile, err.File)
+	assert.Equal(t, 157, err.Line)
+	assert.Equal(t, "m[\"2\"]", err.Ctx)
+	assert.Equal(t, ErrGet, err.Err)
+	assert.Equal(t, fmt.Sprintf("must(m[\"2\"]) |%s:%d| failed with: value is not in a map", err.File, err.Line), err.Error())
+
+	err = runCast(t)
+	assert.NotNil(t, err)
+	assert.Equal(t, thisFile, err.File)
+	assert.Equal(t, 173, err.Line)
+	assert.Equal(t, "", err.Ctx)
+	assert.Equal(t, ErrCast, err.Err)
+	assert.Equal(t, fmt.Sprintf("must() |%s:%d| failed with: type assertion failed", err.File, err.Line), err.Error())
+
+	err = runCastf(t)
+	assert.NotNil(t, err)
+	assert.Equal(t, thisFile, err.File)
+	assert.Equal(t, 189, err.Line)
+	assert.Equal(t, "iface.(int)", err.Ctx)
+	assert.Equal(t, ErrCast, err.Err)
+	assert.Equal(t, fmt.Sprintf("must(iface.(int)) |%s:%d| failed with: type assertion failed", err.File, err.Line), err.Error())
 }

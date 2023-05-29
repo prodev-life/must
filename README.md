@@ -25,6 +25,13 @@ must.Mustf(cmd.Start(), "cmd start")
 val, hasVal := someMap[key]
 must.Hold(hasVal)
 
+v := must.Get(someMap, key)
+v2 := must.Getf(someMap, key2, "someMap[%s]", key2)
+
+var iFace interface{}
+iFace := "hello"
+helloString := must.Castf[string](iFace, "iFace.(string)")
+
 func CouldBeLotsOfEarlyReturns() (retval int, reterr err) {
 	defer func() {
 		if mustErr, ok := must.AsErrOrPanic(recover()); ok {

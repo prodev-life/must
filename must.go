@@ -19,6 +19,13 @@ Example
 	val, hasVal := someMap[key]
 	must.Hold(hasVal)
 
+	v := must.Get(someMap, key)
+	v2 := must.Getf(someMap, key2, "someMap[%s]", key2)
+
+	var iFace interface{}
+	iFace := "hello"
+	helloString := must.Castf[string](iFace, "iFace.(string)")
+
 	func LotsOfEarlyReturns() (retval int, reterr err) {
 	    defer func() {
 			if mustErr, ok := must.AsErrOrPanic(recover()); ok {
@@ -61,6 +68,47 @@ func Do3[T1, T2, T3 any](r1 T1, r2 T2, r3 T3, err error) *Holder3[T1, T2, T3] {
 // Do4 captures 4 values and an error. For an example see Overview
 func Do4[T1, T2, T3, T4 any](r1 T1, r2 T2, r3 T3, r4 T4, err error) *Holder4[T1, T2, T3, T4] {
 	return &Holder4[T1, T2, T3, T4]{r1, r2, r3, r4, err}
+}
+
+// Get accesses a map m with the key k and panics with Err.Err == ErrGet if the key is not present.
+func Get[Key comparable, Val any](m map[Key]Val, k Key) Val {
+	v, ok := m[k]
+	if !ok {
+		panic(newErr(ErrGet, ""))
+	}
+	return v
+}
+
+
+// Getf behaves as Get but allows to specify an arbitrary context string.
+// ctxFormat and ctxArgs are supplied as is to fmt.Sprintf. This context
+// is available in Err.Ctx
+func Getf[Key comparable, Val any](m map[Key]Val, k Key, ctxFormat string, ctxArgs... any) Val {
+	v, ok := m[k]
+	if !ok {
+		panic(newErr(ErrGet, ctxFormat, ctxArgs...))
+	}
+	return v
+}
+
+// Cast tries to make a type casting (assertion) as val.(To) and panics with Err.Err == ErrCast if fails.
+func Cast[To any](val any) To {
+	casted, ok := val.(To)
+	if !ok {
+		panic(newErr(ErrCast, ""))
+	}
+	return casted
+}
+
+// Castf behaves as Cast but allows to specify an arbitrary context string.
+// ctxFormat and ctxArgs are supplied as is to fmt.Sprintf. This context
+// is available in Err.Ctx
+func Castf[To any](val any, ctxFormat string, ctxArgs... any) To {
+	casted, ok := val.(To)
+	if !ok {
+		panic(newErr(ErrCast, ctxFormat, ctxArgs...))
+	}
+	return casted
 }
 
 // R checks if a holder (proxy object returned by Do) is holding an error and if not - returns 1 result.
@@ -141,6 +189,12 @@ func (h *Holder4[T1, T2, T3, T4]) Rf(ctxFormat string, ctxArgs ...any) (T1, T2, 
 
 // ErrHold is an error for Err.Err. Used for panic in Hold/Holdf
 var ErrHold = errors.New("condition did not hold true")
+
+
+// ErrGet is an error for Err.Err. Used for panic in Get/Getf
+var ErrGet = errors.New("value is not in a map")
+
+var ErrCast = errors.New("type assertion failed")
 
 // Err is an error that is used for panic (by pointer) if must functions catch an error.
 type Err struct {
