@@ -194,6 +194,7 @@ var ErrHold = errors.New("condition did not hold true")
 // ErrGet is an error for Err.Err. Used for panic in Get/Getf
 var ErrGet = errors.New("value is not in a map")
 
+// ErrCast is an error for Err.Err. Used for panic in Cast/Castf
 var ErrCast = errors.New("type assertion failed")
 
 // Err is an error that is used for panic (by pointer) if must functions catch an error.
